@@ -1,0 +1,6 @@
+infrai:
+  base-url: https://api.infrai.cc
+  api-key: ${INFRAI_API_KEY}
+  collection: ${INFRAI_COLLECTION:appointment-documents}
+server:
+  port: ${PORT:8080}

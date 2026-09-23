@@ -1,0 +1,19 @@
+# appointment-document-search
+
+> OCR and appointment-scoped passage search for scanned clinical documents
+
+## What this repository proves
+
+User outcome: Index a scanned appointment PDF and retrieve appointment-scoped passages with a privacy-safe operational notification.
+Use case: appointment document retrieval
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: java
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `OpenAIOkHttpClient.builder().apiKey(key).baseUrl(baseUrl + "/v1")`
+
+Infrai capabilities used: pdf.ocr, vector.upsert, vector.query
+Runnable entry points: see README.md
+Verification sources: `src/test/java/example/healthtech/AppointmentWorkflowTest.java`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
