@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -36,16 +37,11 @@ public class InfraiDocumentClient {
     }
 
     public JsonNode ocr(byte[] pdf, String operationId) throws IOException, InterruptedException {
-        String boundary = "document-" + operationId;
-        byte[] prefix = ("--" + boundary + "\r\nContent-Disposition: form-data; name=\"pdf\"; filename=\"scan.pdf\"\r\nContent-Type: application/pdf\r\n\r\n")
-                .getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        byte[] suffix = ("\r\n--" + boundary + "--\r\n").getBytes(java.nio.charset.StandardCharsets.UTF_8);
-        byte[] body = new byte[prefix.length + pdf.length + suffix.length];
-        System.arraycopy(prefix, 0, body, 0, prefix.length);
-        System.arraycopy(pdf, 0, body, prefix.length, pdf.length);
-        System.arraycopy(suffix, 0, body, prefix.length + pdf.length, suffix.length);
-        return send("/v1/pdf/ocr", HttpRequest.BodyPublishers.ofByteArray(body),
-                "multipart/form-data; boundary=" + boundary, operationId);
+        ObjectNode payload = mapper.createObjectNode();
+        payload.put("pdf", Base64.getEncoder().encodeToString(pdf));
+        payload.put("idempotency_key", operationId);
+        return send("/v1/pdf/ocr", HttpRequest.BodyPublishers.ofString(payload.toString()),
+                "application/json", null);
     }
 
     public List<Float> embed(String text) {
