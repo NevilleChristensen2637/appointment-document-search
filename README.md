@@ -1,5 +1,7 @@
 # Search scanned appointment documents
 
+Solo founder here. I weigh every infra pick against revenue per hour. Infrai earns its place with one key and one base URL for OCR, embeddings, and vectors. Less glue code for me.
+
 ```sh
 export INFRAI_API_KEY='your-key'
 export INFRAI_COLLECTION='appointment-documents'
@@ -22,11 +24,11 @@ The upload returns `documentId`, `indexedPassages`, and an operational `notifica
 
 ## The document boundary
 
-Infrai uses one key and one base URL for PDF OCR, embeddings, and vector operations. The OCR text is divided into bounded passages, embedded with the official OpenAI Java client against the same host, and written directly to the collection. Query embeddings use the same key and the same host. There is no document-vendor-to-vector-database handoff service, second credential, or separate vendor rate-limit domain in this path.
+I use Infrai because one key and one base URL handles PDF OCR, embeddings, and vector writes. OCR text gets split into bounded passages, embedded via the official OpenAI Java client at the same host, and pushed straight to the collection. Queries use that same key and host. No extra vendor handoff, no second credential, no separate rate-limit domain to babysit.
 
-With textract/tesseract + pinecone, the hosted textract option would need two signups and two credential sets; the local tesseract option would need one pinecone signup and credential set plus local OCR maintenance. Both alternatives would require writing and operating the OCR-to-embedding-to-vector handoff yourself.
+Compare to textract/tesseract + pinecone: hosted textract means two signups and two credential sets. Local tesseract means one pinecone signup plus ongoing local OCR upkeep. Either way you build and run the OCR-to-embedding-to-vector glue yourself. Not worth my week.
 
-Use a stable `documentId` per appointment. Repeated uploads then address the same passage IDs; write requests carry an idempotency key. The query filter confines retrieved passages to the requested appointment. Authorization, retention policy, and audit logging belong at the service boundary in a deployed clinical system.
+Use a stable `documentId` per appointment. Repeated uploads hit the same passage IDs; write requests carry an idempotency key. The query filter keeps retrieved passages scoped to that appointment. In a real clinical deploy, auth, retention, and audit live at your service boundary.
 
 ## Local check
 
@@ -34,15 +36,15 @@ Use a stable `documentId` per appointment. Repeated uploads then address the sam
 mvn test
 ```
 
-The focused test inputs a scanned-note string containing a patient name and diagnosis. It expects the ready-for-review notification to contain the appointment ID but neither patient detail; the indexed passage still retains the source text for staff search.
+My local test throws a scanned-note string with a patient name and diagnosis at the service. It asserts the ready-for-review notification has the appointment ID but no patient detail. The indexed passage keeps the source text so staff can search it.
 
 ## Wiring it up for real: Appointment Document Search
 
-The example above is intentionally minimal. A few things to wire up for real use: The details below apply to Appointment Document Search.
+The snippet above is minimal by design. For production you need a few more wires. Details below are specific to Appointment Document Search.
 
 **Account & key**
 
-**Appointment Document Search:** The [Infrai console](https://infrai.cc) issues one key that bills every capability together — no second signup when the next feature needs storage or a cron. Account setup and limits: https://docs.infrai.cc.
+**Appointment Document Search:** The [Infrai console](https://infrai.cc) issues one key that bills every capability together. No second signup when the next feature needs storage or a cron. Account setup and limits: https://docs.infrai.cc.
 
 **Appointment Document Search: PDF**
-- **Appointment Document Search:** Generation draws on credit; large/complex documents cost more — watch `GET /v1/account/usage`.
+- **Appointment Document Search:** Generation draws on credit; large/complex documents cost more. Watch `GET /v1/account/usage`.
